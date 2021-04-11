@@ -48,6 +48,11 @@ sqlc_handle_t sqlc_api_db_open(int sqlc_api_version, const char *filename, int f
 
 sqlc_handle_t sqlc_db_open(const char *filename, int flags);
 
+/* Custom tokenizers */
+sqlc_handle_t sqlc_syn_context_create(sqlc_handle_t db);
+void sqlc_syn_context_delete(sqlc_handle_t syn_context_h);
+int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h);
+
 // FUTURE TBD (???):
 //sqlc_handle_t sqlc_db_open_vfs(const char *filename, int flags, const char *vfs);
 

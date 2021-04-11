@@ -13,3 +13,6 @@
 [submodule "sqlite3-base64"]
 	path = sqlite3-base64
 	url = https://github.com/brodybits/sqlite3-base64.git
+[submodule "search-tokenizers"]
+	path = search-tokenizers
+	url = git@github.com:silverorange/sqlite_synonyms_tokenizer.git

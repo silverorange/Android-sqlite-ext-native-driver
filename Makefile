@@ -2,7 +2,7 @@
 all: ndkbuild
 
 init:
-	git submodule update --init
+	git submodule update --init --recursive
 
 regen:
 	java -cp gluegentools/antlr.jar:gluegentools/gluegen.jar com.jogamp.gluegen.GlueGen -I. -Ecom.jogamp.gluegen.JavaEmitter -CSQLiteNative.cfg native/sqlc.h

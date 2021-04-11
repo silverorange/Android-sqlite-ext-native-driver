@@ -13,6 +13,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../sqlite-amalgamation
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../sqlite3-regexp-cached
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../libb64-encode
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../sqlite3-base64
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../search-tokenizers/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../search-tokenizers/uthash/src
 
 LOCAL_CFLAGS += -DSQLITE_THREADSAFE=1
 LOCAL_CFLAGS += -DSQLITE_DEFAULT_SYNCHRONOUS=3

@@ -12,3 +12,9 @@
 #include "sqlc.c"
 
 #include "sqlite3_regexp.c"
+
+#include "fts5.c"
+
+#include "stop-words.c"
+
+#include "synonyms.c"

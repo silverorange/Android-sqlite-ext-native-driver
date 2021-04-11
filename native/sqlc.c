@@ -10,6 +10,12 @@
 
 #include "sqlite3_base64.h"
 
+#include "stop-words.h"
+
+#include "synonyms.h"
+
+#include "fts5.h"
+
 #define BASE_HANDLE_OFFSET 0x100000000LL
 
 #ifdef SQLC_KEEP_ANDROID_LOG
@@ -56,6 +62,49 @@ sqlc_handle_t sqlc_db_open(const char *filename, int flags)
   sqlite3_base64_init(d1);
 
   return HANDLE_FROM_VP(d1);
+}
+
+sqlc_handle_t sqlc_syn_context_create(sqlc_handle_t db)
+{
+  sqlite3 *mydb = HANDLE_TO_VP(db);
+  fts5_api *fts_api = fts5_api_from_db(mydb);
+  if (fts_api == 0) {
+    MYLOG("syn_context_create fts api lookup failed");
+    return -1;
+  }
+
+  SynonymsTokenizerCreateContext *syn_context = NULL;
+  synonyms_context_create(mydb, fts_api, &syn_context);
+
+  return HANDLE_FROM_VP(syn_context);
+}
+
+void sqlc_syn_context_delete(sqlc_handle_t syn_context_h)
+{
+  SynonymsTokenizerCreateContext *syn_context = HANDLE_TO_VP(syn_context_h);
+  synonyms_context_delete(syn_context);
+}
+
+int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h)
+{
+  int r1;
+  SynonymsTokenizerCreateContext *syn_context = HANDLE_TO_VP(syn_context_h);
+
+  fts5_api *fts_api = syn_context->pFts5Api;
+
+  // Create synonyms tokenizer
+  r1 = fts_api->xCreateTokenizer(fts_api, "synonyms", (void *)syn_context, &synonyms_tokenizer, 0);
+  if (r1 != 0) {
+    return r1;
+  }
+
+  // StopWordsTokenizerCreateContext stp_context = {fts_api};
+  // r1 = fts_api->xCreateTokenizer(fts_api, "stopwords", (void *)stp_context, &stop_words_tokenizer, 0);
+  // if (r1 != 0) {
+  //   return r1;
+  // }
+
+  return r1;
 }
 
 sqlc_handle_t sqlc_db_prepare_st(sqlc_handle_t db, const char *sql)
