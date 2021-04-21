@@ -61,6 +61,8 @@ sqlc_handle_t sqlc_db_open(const char *filename, int flags)
 
   sqlite3_base64_init(d1);
 
+  sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
+
   return HANDLE_FROM_VP(d1);
 }
 
