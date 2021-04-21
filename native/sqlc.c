@@ -98,7 +98,7 @@ sqlc_handle_t sqlc_stp_context_create(sqlc_handle_t db)
 
   StopWordsTokenizerCreateContext *stp_context = NULL;
   stp_context = sqlite3_malloc(sizeof(StopWordsTokenizerCreateContext));
-  stp_context->pFts5Api = fts5_api;
+  stp_context->pFts5Api = fts_api;
 
   return HANDLE_FROM_VP(stp_context);
 }
