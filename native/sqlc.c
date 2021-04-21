@@ -71,7 +71,7 @@ sqlc_handle_t sqlc_syn_context_create(sqlc_handle_t db)
   sqlite3 *mydb = HANDLE_TO_VP(db);
   fts5_api *fts_api = fts5_api_from_db(mydb);
   if (fts_api == 0) {
-    MYLOG("syn_context_create fts api lookup failed");
+    MYLOG("sqlc_syn_context_create fts api lookup failed");
     return -1;
   }
 
@@ -87,10 +87,33 @@ void sqlc_syn_context_delete(sqlc_handle_t syn_context_h)
   synonyms_context_delete(syn_context);
 }
 
-int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h)
+sqlc_handle_t sqlc_stp_context_create(sqlc_handle_t db)
+{
+  sqlite3 *mydb = HANDLE_TO_VP(db);
+  fts5_api *fts_api = fts5_api_from_db(mydb);
+  if (fts_api == 0) {
+    MYLOG("sqlc_stp_context_create fts api lookup failed");
+    return -1;
+  }
+
+  StopWordsTokenizerCreateContext *stp_context = NULL;
+  stp_context = sqlite3_malloc(sizeof(StopWordsTokenizerCreateContext));
+  stp_context->pFts5Api = fts5_api;
+
+  return HANDLE_FROM_VP(stp_context);
+}
+
+void sqlc_stp_context_delete(sqlc_handle_t stp_context_h)
+{
+  StopWordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
+  sqlite3_free(stp_context);
+}
+
+int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, sqlc_handle_t stp_context_h)
 {
   int r1;
   SynonymsTokenizerCreateContext *syn_context = HANDLE_TO_VP(syn_context_h);
+  StopWordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
 
   fts5_api *fts_api = syn_context->pFts5Api;
 
@@ -100,11 +123,11 @@ int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h)
     return r1;
   }
 
-  // StopWordsTokenizerCreateContext stp_context = {fts_api};
-  // r1 = fts_api->xCreateTokenizer(fts_api, "stopwords", (void *)stp_context, &stop_words_tokenizer, 0);
-  // if (r1 != 0) {
-  //   return r1;
-  // }
+  // Create stopwords tokenizer
+  r1 = fts_api->xCreateTokenizer(fts_api, "stopwords", (void *)stp_context, &stop_words_tokenizer, 0);
+  if (r1 != 0) {
+    return r1;
+  }
 
   return r1;
 }
