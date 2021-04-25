@@ -15,6 +15,8 @@
 
 #include "fts5.c"
 
-#include "stop-words.c"
+#include "meta.c"
+
+#include "stopwords.c"
 
 #include "synonyms.c"

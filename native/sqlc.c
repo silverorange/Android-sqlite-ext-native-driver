@@ -10,7 +10,7 @@
 
 #include "sqlite3_base64.h"
 
-#include "stop-words.h"
+#include "stopwords.h"
 
 #include "synonyms.h"
 
@@ -96,35 +96,48 @@ sqlc_handle_t sqlc_stp_context_create(sqlc_handle_t db)
     return -1;
   }
 
-  StopWordsTokenizerCreateContext *stp_context = NULL;
-  stp_context = sqlite3_malloc(sizeof(StopWordsTokenizerCreateContext));
-  stp_context->pFts5Api = fts_api;
+  StopwordsTokenizerCreateContext *stp_context = NULL;
+  stopwords_context_create(mydb, fts_api, &stp_context);
 
   return HANDLE_FROM_VP(stp_context);
 }
 
 void sqlc_stp_context_delete(sqlc_handle_t stp_context_h)
 {
-  StopWordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
-  sqlite3_free(stp_context);
+  StopwordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
+  stopwords_context_delete(stp_context);
 }
 
 int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, sqlc_handle_t stp_context_h)
 {
   int r1;
   SynonymsTokenizerCreateContext *syn_context = HANDLE_TO_VP(syn_context_h);
-  StopWordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
+  StopwordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
 
-  fts5_api *fts_api = syn_context->pFts5Api;
+  static fts5_tokenizer synonyms_tokenizer = {
+    .xCreate = synonyms_tokenizer_create,
+    .xDelete = synonyms_tokenizer_delete,
+    .xTokenize = synonyms_tokenizer_tokenize
+  };
 
+  static fts5_tokenizer stopwords_tokenizer = {
+    .xCreate = stopwords_tokenizer_create,
+    .xDelete = stopwords_tokenizer_delete,
+    .xTokenize = stopwords_tokenizer_tokenize
+  };
+
+  fts5_api *fts_api;
+  
   // Create synonyms tokenizer
+  fts_api = syn_context->pFts5Api;
   r1 = fts_api->xCreateTokenizer(fts_api, "synonyms", (void *)syn_context, &synonyms_tokenizer, 0);
   if (r1 != 0) {
     return r1;
   }
 
   // Create stopwords tokenizer
-  r1 = fts_api->xCreateTokenizer(fts_api, "stopwords", (void *)stp_context, &stop_words_tokenizer, 0);
+  fts_api = stp_context->pFts5Api;
+  r1 = fts_api->xCreateTokenizer(fts_api, "stopwords", (void *)stp_context, &stopwords_tokenizer, 0);
   if (r1 != 0) {
     return r1;
   }
