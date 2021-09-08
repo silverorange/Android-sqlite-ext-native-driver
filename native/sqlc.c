@@ -60,7 +60,12 @@ sqlc_handle_ct *sqlc_db_open(const char *filename, int flags)
 
   MYLOG("db_open %s result %d ptr %p", filename, r1, d1);
 
-  if (r1 != 0) return -r1;
+  if (r1 != 0) {
+    resp = malloc(sizeof(sqlc_handle_ct));
+    resp->result = r1;
+    resp->handle = 0;
+    return resp;
+  }
 
   sqlite3_db_config(d1, SQLITE_DBCONFIG_DEFENSIVE, 1, NULL);
 
@@ -72,25 +77,35 @@ sqlc_handle_ct *sqlc_db_open(const char *filename, int flags)
   sqlite3_exec(d1, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
 
   resp = malloc(sizeof(sqlc_handle_ct));
-  resp->result = (r1 == 0) ? 0 : -r1;
+  resp->result = r1;
   resp->handle = HANDLE_FROM_VP(d1);
 
   return resp;
 }
 
-sqlc_handle_t sqlc_syn_context_create(sqlc_handle_t db)
+sqlc_handle_ct *sqlc_syn_context_create(sqlc_handle_t db)
 {
+  sqlc_handle_ct *resp;
   sqlite3 *mydb = HANDLE_TO_VP(db);
   fts5_api *fts_api = fts5_api_from_db(mydb);
   if (fts_api == 0) {
     MYLOG("sqlc_syn_context_create fts api lookup failed");
-    return -1;
+
+    resp = malloc(sizeof(sqlc_handle_ct));
+    resp->result = SQLC_RESULT_ERROR;
+    resp->handle = 0;
+
+    return resp;
   }
 
   SynonymsTokenizerCreateContext *syn_context = NULL;
   synonyms_context_create(mydb, fts_api, &syn_context);
 
-  return HANDLE_FROM_VP(syn_context);
+  resp = malloc(sizeof(sqlc_handle_ct));
+  resp->result = 0;
+  resp->handle = HANDLE_FROM_VP(syn_context);
+
+  return resp;
 }
 
 void sqlc_syn_context_delete(sqlc_handle_t syn_context_h)
@@ -99,19 +114,29 @@ void sqlc_syn_context_delete(sqlc_handle_t syn_context_h)
   synonyms_context_delete(syn_context);
 }
 
-sqlc_handle_t sqlc_stp_context_create(sqlc_handle_t db)
+sqlc_handle_ct *sqlc_stp_context_create(sqlc_handle_t db)
 {
+  sqlc_handle_ct *resp;
   sqlite3 *mydb = HANDLE_TO_VP(db);
   fts5_api *fts_api = fts5_api_from_db(mydb);
   if (fts_api == 0) {
     MYLOG("sqlc_stp_context_create fts api lookup failed");
-    return -1;
+
+    resp = malloc(sizeof(sqlc_handle_ct));
+    resp->result = SQLC_RESULT_ERROR;
+    resp->handle = 0;
+
+    return resp;
   }
 
   StopwordsTokenizerCreateContext *stp_context = NULL;
   stopwords_context_create(mydb, fts_api, &stp_context);
 
-  return HANDLE_FROM_VP(stp_context);
+  resp = malloc(sizeof(sqlc_handle_ct));
+  resp->result = 0;
+  resp->handle = HANDLE_FROM_VP(stp_context);
+
+  return resp;
 }
 
 void sqlc_stp_context_delete(sqlc_handle_t stp_context_h)
@@ -169,7 +194,7 @@ sqlc_handle_ct *sqlc_db_prepare_st(sqlc_handle_t db, const char *sql)
   rv = sqlite3_prepare_v2(mydb, sql, -1, &s, NULL);
 
   resp = malloc(sizeof(sqlc_handle_ct));
-  resp->result = (rv == 0) ? 0 : -rv;
+  resp->result = rv;
   resp->handle = HANDLE_FROM_VP(s);
 
   return resp;
