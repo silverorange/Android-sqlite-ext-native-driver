@@ -39,14 +39,19 @@ typedef long long sqlc_long_t;
 /* negative number indicates an error: */
 typedef sqlc_long_t sqlc_handle_t;
 
+typedef struct {
+  int result;
+  sqlc_handle_t handle;
+} sqlc_handle_ct;
+
 /* RECOMMENDED (alt 1): Use this call at startup to check Java/native library match
  * (returns SQLC_RESULT_OK [0] if OK, other value in case of mismatch) */
 int sqlc_api_version_check(int sqlc_api_version);
 
 /* RECOMMENDED (alt 2): Check Java/native library match and open database handle */
-sqlc_handle_t sqlc_api_db_open(int sqlc_api_version, const char *filename, int flags);
+sqlc_handle_ct *sqlc_api_db_open(int sqlc_api_version, const char *filename, int flags);
 
-sqlc_handle_t sqlc_db_open(const char *filename, int flags);
+sqlc_handle_ct *sqlc_db_open(const char *filename, int flags);
 
 /* Custom tokenizers */
 sqlc_handle_t sqlc_syn_context_create(sqlc_handle_t db);
@@ -66,14 +71,14 @@ int sqlc_db_key_native_string(sqlc_handle_t db, char *key_string);
 // FUTURE TBD (???) for sqlcipher:
 //  int sqlc_db_rekey_string_native(sqlc_handle_t db, char *key_string);
 
-sqlc_handle_t sqlc_db_prepare_st(sqlc_handle_t db, const char *sql);
+sqlc_handle_ct *sqlc_db_prepare_st(sqlc_handle_t db, const char *sql);
 
 sqlc_long_t sqlc_db_last_insert_rowid(sqlc_handle_t db);
 int sqlc_db_total_changes(sqlc_handle_t db);
 
 int sqlc_db_errcode(sqlc_handle_t db);
-const char * sqlc_db_errmsg_native(sqlc_handle_t db);
-const char * sqlc_errstr_native(int errcode);
+const char *sqlc_db_errmsg_native(sqlc_handle_t db);
+const char *sqlc_errstr_native(int errcode);
 
 // FUTURE TBD bind blob:
 //  int sqlc_st_bind_blob(sqlc_handle_t st, int pos, const void *val, int len); // ??
