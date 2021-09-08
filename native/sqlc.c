@@ -26,6 +26,10 @@
 #define HANDLE_FROM_VP(p) ( (unsigned char *)(p) - (unsigned char *)NULL )
 #define HANDLE_TO_VP(h) (void *)( (unsigned char *)NULL + (ptrdiff_t)((h)) )
 
+void sqlc_handle_ct_delete(sqlc_handle_ct *handle_ct) {
+  free(handle_ct);
+}
+
 int sqlc_api_version_check(int sqlc_api_version)
 {
   return (sqlc_api_version != SQLC_API_VERSION) ? SQLC_RESULT_ERROR : SQLC_RESULT_OK;

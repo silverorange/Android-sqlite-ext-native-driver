@@ -44,6 +44,8 @@ typedef struct {
   sqlc_handle_t handle;
 } sqlc_handle_ct;
 
+void sqlc_handle_ct_delete(sqlc_handle_ct *handle_ct);
+
 /* RECOMMENDED (alt 1): Use this call at startup to check Java/native library match
  * (returns SQLC_RESULT_OK [0] if OK, other value in case of mismatch) */
 int sqlc_api_version_check(int sqlc_api_version);
@@ -61,7 +63,7 @@ void sqlc_stp_context_delete(sqlc_handle_t stp_context_h);
 int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, sqlc_handle_t stp_context_h);
 
 // FUTURE TBD (???):
-//sqlc_handle_t sqlc_db_open_vfs(const char *filename, int flags, const char *vfs);
+//sqlc_handle_ct *sqlc_db_open_vfs(const char *filename, int flags, const char *vfs);
 
 // FUTURE TBD (???) for sqlcipher:
 //  int sqlc_db_key_bytes(sqlc_handle_t db, unsigned char *key_bytes, int num_bytes);
