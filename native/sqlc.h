@@ -1,3 +1,5 @@
+#pragma once
+
 /* API version to check: */
 #define SQLC_API_VERSION 1
 
