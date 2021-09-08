@@ -46,8 +46,6 @@ typedef struct {
   sqlc_handle_t handle;
 } sqlc_handle_ct;
 
-void sqlc_handle_ct_delete(sqlc_handle_ct *handle_ct);
-
 /* RECOMMENDED (alt 1): Use this call at startup to check Java/native library match
  * (returns SQLC_RESULT_OK [0] if OK, other value in case of mismatch) */
 int sqlc_api_version_check(int sqlc_api_version);
