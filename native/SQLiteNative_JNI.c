@@ -484,13 +484,44 @@ Java_io_liteglue_SQLiteNative_sqlc_1syn_1context_1delete__J(JNIEnv *env, jclass 
 
 /*   Java->C glue code:
  *   Java package: io.liteglue.SQLiteNative
- *    Java method: int sqlc_tokenizer_register_all(long db, long syn_context_h, long stp_context_h)
- *     C function: int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, sqlc_handle_t stp_context_h);
+ *    Java method: SQLiteResponse sqlc_phr_context_create(long db)
+ *     C function: sqlc_handle_ct *  sqlc_phr_context_create(sqlc_handle_t db);
+ */
+JNIEXPORT jobject JNICALL 
+Java_io_liteglue_SQLiteNative_sqlc_1phr_1context_1create__J(JNIEnv *env, jclass _unused, jlong db) {
+  sqlc_handle_ct *  _res;
+  _res = sqlc_phr_context_create((sqlc_handle_t) db);
+
+  jclass class = (*env)->FindClass(env,"io/liteglue/SQLiteResponse");
+  jmethodID constructor = (*env)->GetMethodID(env, class, "<init>", "(IJ)V");
+  jobject instance = (*env)->NewObject(env, class, constructor, _res->result, _res->handle);
+
+  free(_res);
+
+  return instance;
+}
+
+
+/*   Java->C glue code:
+ *   Java package: io.liteglue.SQLiteNative
+ *    Java method: void sqlc_phr_context_delete(long phr_context_h)
+ *     C function: void sqlc_phr_context_delete(sqlc_handle_t phr_context_h);
+ */
+JNIEXPORT void JNICALL 
+Java_io_liteglue_SQLiteNative_sqlc_1phr_1context_1delete__J(JNIEnv *env, jclass _unused, jlong phr_context_h) {
+  sqlc_phr_context_delete((sqlc_handle_t) phr_context_h);
+}
+
+
+/*   Java->C glue code:
+ *   Java package: io.liteglue.SQLiteNative
+ *    Java method: int sqlc_tokenizer_register_all(long db, long syn_context_h, long stp_context_h, long phr_context_h)
+ *     C function: int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, sqlc_handle_t stp_context_h, sqlc_handle_t phr_context_h);
  */
 JNIEXPORT jint JNICALL 
-Java_io_liteglue_SQLiteNative_sqlc_1tokenizer_1register_1all__JJJ(JNIEnv *env, jclass _unused, jlong db, jlong syn_context_h, jlong stp_context_h) {
+Java_io_liteglue_SQLiteNative_sqlc_1tokenizer_1register_1all__JJJJ(JNIEnv *env, jclass _unused, jlong db, jlong syn_context_h, jlong stp_context_h, jlong phr_context_h) {
   int _res;
-  _res = sqlc_tokenizer_register_all((sqlc_handle_t) db, (sqlc_handle_t) syn_context_h, (sqlc_handle_t) stp_context_h);
+  _res = sqlc_tokenizer_register_all((sqlc_handle_t) db, (sqlc_handle_t) syn_context_h, (sqlc_handle_t) stp_context_h, (sqlc_handle_t) phr_context_h);
   return _res;
 }
 

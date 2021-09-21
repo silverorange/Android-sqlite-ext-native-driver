@@ -14,6 +14,10 @@
 
 #include "synonyms.h"
 
+#include "phrases.h"
+
+#include "unicode.h"
+
 #include "fts5.h"
 
 #ifdef SQLC_KEEP_ANDROID_LOG
@@ -141,11 +145,53 @@ void sqlc_stp_context_delete(sqlc_handle_t stp_context_h)
   stopwords_context_delete(stp_context);
 }
 
-int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, sqlc_handle_t stp_context_h)
+sqlc_handle_ct *sqlc_phr_context_create(sqlc_handle_t db)
+{
+  sqlc_handle_ct *resp;
+  sqlite3 *mydb = HANDLE_TO_VP(db);
+  fts5_api *fts_api = fts5_api_from_db(mydb);
+  if (fts_api == 0) {
+    MYLOG("sqlc_phr_context_create fts api lookup failed");
+
+    resp = malloc(sizeof(sqlc_handle_ct));
+    resp->result = SQLC_RESULT_ERROR;
+    resp->handle = 0;
+
+    return resp;
+  }
+
+  PhrasesTokenizerCreateContext *phr_context = NULL;
+  phrases_context_create(mydb, fts_api, &phr_context);
+
+  resp = malloc(sizeof(sqlc_handle_ct));
+  resp->result = 0;
+  resp->handle = HANDLE_FROM_VP(stp_context);
+
+  return resp;
+}
+
+void sqlc_phr_context_delete(sqlc_handle_t phr_context_h)
+{
+  PhrasesTokenizerCreateContext *phr_context = HANDLE_TO_VP(phr_context_h);
+  phrases_context_delete(phr_context);
+}
+
+int sqlc_tokenizer_register_all(
+  sqlc_handle_t db,
+  sqlc_handle_t syn_context_h,
+  sqlc_handle_t stp_context_h,
+  sqlc_handle_t phr_handle_t)
 {
   int r1;
   SynonymsTokenizerCreateContext *syn_context = HANDLE_TO_VP(syn_context_h);
   StopwordsTokenizerCreateContext *stp_context = HANDLE_TO_VP(stp_context_h);
+  PhrasesTokenizerCreateContext *phr_context = HANDLE_TO_VP(phr_context_h);
+
+  static fts5_tokenizer unicode_tokenizer = {
+    .xCreate = unicode_tokenizer_create,
+    .xDelete = unicode_tokenizer_delete,
+    .xTokenize = unicode_tokenizer_tokenize
+  };
 
   static fts5_tokenizer synonyms_tokenizer = {
     .xCreate = synonyms_tokenizer_create,
@@ -159,8 +205,21 @@ int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, s
     .xTokenize = stopwords_tokenizer_tokenize
   };
 
+  static fts5_tokenizer phrases_tokenizer = {
+    .xCreate = phrases_tokenizer_create,
+    .xDelete = phrases_tokenizer_delete,
+    .xTokenize = phrases_tokenizer_tokenize
+  };
+
   fts5_api *fts_api;
   
+  // Create unicode tokenizer
+  fts_api = syn_context->pFts5Api; // Note: We're pulling the FTS API from another tokenizer, but that's ok.
+  r1 = fts_api->xCreateTokenizer(fts_api, "unicode", NULL, &unicode_tokenizer, 0);
+  if (r1 != 0) {
+    return r1;
+  }
+
   // Create synonyms tokenizer
   fts_api = syn_context->pFts5Api;
   r1 = fts_api->xCreateTokenizer(fts_api, "synonyms", (void *)syn_context, &synonyms_tokenizer, 0);
@@ -171,6 +230,13 @@ int sqlc_tokenizer_register_all(sqlc_handle_t db, sqlc_handle_t syn_context_h, s
   // Create stopwords tokenizer
   fts_api = stp_context->pFts5Api;
   r1 = fts_api->xCreateTokenizer(fts_api, "stopwords", (void *)stp_context, &stopwords_tokenizer, 0);
+  if (r1 != 0) {
+    return r1;
+  }
+
+  // Create phrases tokenizer
+  fts_api = phr_context->pFts5Api;
+  r1 = fts_api->xCreateTokenizer(fts_api, "phrases", (void *)phr_context, &phrases_tokenizer, 0);
   if (r1 != 0) {
     return r1;
   }

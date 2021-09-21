@@ -20,3 +20,7 @@
 #include "stopwords.c"
 
 #include "synonyms.c"
+
+#include "phrases.c"
+
+#include "unicode.c"
