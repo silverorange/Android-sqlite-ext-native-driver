@@ -165,7 +165,7 @@ sqlc_handle_ct *sqlc_phr_context_create(sqlc_handle_t db)
 
   resp = malloc(sizeof(sqlc_handle_ct));
   resp->result = 0;
-  resp->handle = HANDLE_FROM_VP(stp_context);
+  resp->handle = HANDLE_FROM_VP(phr_context);
 
   return resp;
 }
@@ -180,7 +180,7 @@ int sqlc_tokenizer_register_all(
   sqlc_handle_t db,
   sqlc_handle_t syn_context_h,
   sqlc_handle_t stp_context_h,
-  sqlc_handle_t phr_handle_t)
+  sqlc_handle_t phr_context_h)
 {
   int r1;
   SynonymsTokenizerCreateContext *syn_context = HANDLE_TO_VP(syn_context_h);

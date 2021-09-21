@@ -23,4 +23,6 @@
 
 #include "phrases.c"
 
+#include "unicode2.c"
+
 #include "unicode.c"
