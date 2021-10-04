@@ -11,9 +11,19 @@ init:
 #	sed -i.orig 's/^import/\/\/import/' java/io/liteglue/SQLiteNative.java
 
 # NOTE: adding v (verbose) flag for the beginning stage:
-ndkbuild:
+
+MY_LIBSTEMMER_VERSION := $(shell cd search-tokenizers/snowball && grep '^SNOWBALL_VERSION = [0-9.]\+' GNUmakefile | grep -o '[0-9.]\+')
+
+snowball_src:
+	cd search-tokenizers/snowball && \
+	make dist_libstemmer_c && \
+	cd dist && \
+	tar -xzvf libstemmer_c*.tar.gz
+
+ndkbuild: snowball_src
+	echo "Using libstemmer-"$(MY_LIBSTEMMER_VERSION)
 	rm -rf lib libs
-	ndk-build
+	ndk-build MY_LIBSTEMMER_VERSION=$(MY_LIBSTEMMER_VERSION)
 	zip sqlite-native-driver-libs.zip libs/*/*
 	mv libs lib
 	jar cf sqlite-native-driver.jar lib

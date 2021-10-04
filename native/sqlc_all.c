@@ -26,3 +26,5 @@
 #include "unicode2.c"
 
 #include "unicode.c"
+
+#include "snowball.c"

@@ -9,12 +9,16 @@ include $(CLEAR_VARS)
 LOCAL_LDLIBS := -llog
 LOCAL_MODULE := sqlc-native-driver
 
+# This should get passed in, but set it otherwise.
+MY_LIBSTEMMER_VERSION ?= 2.1.0
+
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../sqlite-amalgamation
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../sqlite3-regexp-cached
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../libb64-encode
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../sqlite3-base64
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../search-tokenizers/src
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../search-tokenizers/uthash/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../search-tokenizers/snowball/dist/libstemmer_c-$(MY_LIBSTEMMER_VERSION)/include
 
 LOCAL_CFLAGS += -DSQLITE_THREADSAFE=1
 LOCAL_CFLAGS += -DSQLITE_DEFAULT_SYNCHRONOUS=3
@@ -37,6 +41,13 @@ LOCAL_CFLAGS += -DSQLITE_ENABLE_JSON1
 LOCAL_CFLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=4096
 LOCAL_CFLAGS += -DSQLITE_DEFAULT_CACHE_SIZE=-2000
 
-LOCAL_SRC_FILES := ../native/sqlc_all.c
+MY_LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/../search-tokenizers/snowball/dist/libstemmer_c-$(MY_LIBSTEMMER_VERSION)/src_c/*.c)
+MY_LOCAL_SRC_FILES += $(wildcard $(LOCAL_PATH)/../search-tokenizers/snowball/dist/libstemmer_c-$(MY_LIBSTEMMER_VERSION)/runtime/*.c)
+MY_LOCAL_SRC_FILES += $(LOCAL_PATH)/../search-tokenizers/snowball/dist/libstemmer_c-$(MY_LIBSTEMMER_VERSION)/libstemmer/libstemmer.c
+MY_LOCAL_SRC_FILES += $(LOCAL_PATH)/../native/sqlc_all.c
+
+MY_LOCAL_SRC_FILES := $(MY_LOCAL_SRC_FILES:$(LOCAL_PATH)/%=%)
+
+LOCAL_SRC_FILES := $(MY_LOCAL_SRC_FILES)
 
 include $(BUILD_SHARED_LIBRARY)
