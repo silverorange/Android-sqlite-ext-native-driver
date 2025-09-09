@@ -8,3 +8,7 @@ APP_ABI := armeabi-v7a x86 x86_64 arm64-v8a
 APP_PLATFORM := android-21
 
 # APP_DEBUG := true
+
+# Add 16Kb memory page size support
+# https://source.android.com/docs/core/architecture/16kb-page-size/16kb
+APP_SUPPORT_FLEXIBLE_PAGE_SIZES := true

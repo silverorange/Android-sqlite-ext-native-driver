@@ -3,8 +3,12 @@
 # original location:
 # http://mobile.tutsplus.com/tutorials/android/ndk-tutorial/
 
+# Add 16Kb memory page size support
+# https://source.android.com/docs/core/architecture/16kb-page-size/16kb
+LOCAL_LDFLAGS += "-Wl,-z,max-page-size=16384"
+
 LOCAL_PATH := $(call my-dir)
-include $(CLEAR_VARS)  
+include $(CLEAR_VARS)
 
 LOCAL_LDLIBS := -llog
 LOCAL_MODULE := sqlc-native-driver
